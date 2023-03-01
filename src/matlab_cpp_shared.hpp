@@ -44,6 +44,35 @@ namespace {
     typedef std::basic_streambuf<char16_t> StreamBuffer;
 }
 
+#ifdef __cplusplus
+#define EXTERN_C extern "C"
+#else
+#define EXTERN_C extern
+#endif
+#ifdef _MSC_VER
+#define RUNTIME_DLL_EXPORT_SYM __declspec(dllexport)
+#define RUNTIME_DLL_IMPORT_SYM __declspec(dllimport)
+#elif __GNUC__ >= 4
+#define RUNTIME_DLL_EXPORT_SYM __attribute__((visibility("default")))
+#define RUNTIME_DLL_IMPORT_SYM __attribute__((visibility("default")))
+#else
+#define RUNTIME_DLL_EXPORT_SYM
+#define RUNTIME_DLL_IMPORT_SYM
+#endif
+
+#if defined(BUILDING_RUNTIME_PROXY)
+#define CPP_RUNTIME_C_API EXTERN_C RUNTIME_DLL_EXPORT_SYM
+#else
+#define CPP_RUNTIME_C_API EXTERN_C RUNTIME_DLL_IMPORT_SYM
+#endif
+CPP_RUNTIME_C_API int cppsharedlib_run_main(int(*mainfcn)(int, const char**), int argc, const char ** argv);
+namespace {
+	std::function<int(int, const char**)>* userMainFcnPtr;
+	extern "C" inline int wrapUserMain(int argc, const char** argv){
+		return (*userMainFcnPtr)(argc, argv);
+	}
+}
+
 namespace matlab {
 
   namespace execution {
@@ -258,6 +287,14 @@ namespace matlab {
             throw std::runtime_error("Failed to initialize MATLABlibrary");
         }
         return std::unique_ptr<MATLABLibrary>(new MATLABLibrary(application, handle));
+    }
+
+    inline int runMain(std::function<int(std::shared_ptr<MATLABApplication> func, int, const char**)> mainFcn,
+		    std::shared_ptr<MATLABApplication>&& appsession, int argc, const char **argv){
+	    using namespace std::placeholders;
+	    std::function<int(int, const char **)> userMainFcn = [&](int argc, const char ** argv){return mainFcn(std::move(appsession), argc, argv);};
+	    userMainFcnPtr = &userMainFcn;
+	    return cppsharedlib_run_main(wrapUserMain, argc, argv);
     }
 
   } // namespace cpplib

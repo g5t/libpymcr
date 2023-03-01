@@ -39,6 +39,13 @@ if (NOT Matlab_HAS_CPP_API)
   endif()
 endif()
 
+# always try to find the runtime libraries
+file(GLOB_RECURSE Matlab_RUNTIME_LIBRARY "${Matlab_ROOT_DIR}/runtime/*/libMatlabCppSharedLib*.so")
+if (Matlab_RUNTIME_LIBRARY)
+   message(STATUS "Matlab_RUNTIME_LIBRARY=${Matlab_RUNTIME_LIBRARY}")
+   list(APPEND Matlab_LIBRARIES ${Matlab_RUNTIME_LIBRARY})
+endif()
+
 # Gets the version string from the xml file if it is not defined
 if (NOT Matlab_VERSION_STRING OR Matlab_VERSION_STRING STREQUAL "unknown")
   if(EXISTS "${Matlab_ROOT_DIR}/VersionInfo.xml")

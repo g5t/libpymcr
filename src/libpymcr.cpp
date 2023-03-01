@@ -37,7 +37,7 @@ namespace libpymcr {
         }
         return nargout;
     }
-
+	
     py::object matlab_env::feval(const std::u16string &funcname, py::args args, py::kwargs& kwargs) {
         // Calls Matlab function
         const size_t nlhs = 0;
@@ -101,8 +101,15 @@ namespace libpymcr {
         auto mode = matlab::cpplib::MATLABApplicationMode::IN_PROCESS;
         // Specify MATLAB startup options
         std::vector<std::u16string> options = {u""};
-        _app = matlab::cpplib::initMATLABApplication(mode, options);
-        _lib = matlab::cpplib::initMATLABLibrary(_app, ctfname);
+        auto new_app = matlab::cpplib::initMATLABApplication(mode, options);
+	int argc{0};
+	const char * argv[] = {""};
+	std::function<int(std::shared_ptr<matlab::cpplib::MATLABApplication>, const int, const char **)>
+		main = [&](std::shared_ptr<matlab::cpplib::MATLABApplication> app, const int c, const char ** v){
+	    _lib = matlab::cpplib::initMATLABLibrary(app, ctfname);
+	    return 0;
+	};
+	matlab::cpplib::runMain(main, std::move(new_app), argc, argv);
         _converter = pymat_converter(pymat_converter::NumpyConversion::WRAP);
     }
 

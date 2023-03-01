@@ -14,7 +14,7 @@ namespace libpymcr {
     class matlab_env {
     protected:
         // Properties
-        std::shared_ptr<matlab::cpplib::MATLABApplication> _app;
+        //std::shared_ptr<matlab::cpplib::MATLABApplication> _app;
         std::unique_ptr<matlab::cpplib::MATLABLibrary> _lib;
         std::shared_ptr<StringBuffer> _m_output = std::make_shared<StringBuffer>();
         std::shared_ptr<StringBuffer> _m_error = std::make_shared<StringBuffer>();

@@ -25,3 +25,8 @@ set_property(TARGET call_python PROPERTY LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY
 
 #get_target_property(CALLPYTHON_LINKED_LIBS call_python LINK_LIBRARIES)
 #message("Libs linked to call_python: ${CALLPYTHON_LINKED_LIBS}")
+
+#add_library(MatlabCppSharedLib SHARED IMPORTED)
+#set_target_properties(MatlabCppSharedLib IMPORTED_LOCATION ${Matlab_LIBRARIES})
+#target_link_libraries(_libpymcr PUBLIC MatlabCppSharedLib)
+target_link_libraries(_libpymcr PUBLIC ${Matlab_LIBRARIES})
